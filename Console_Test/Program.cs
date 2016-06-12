@@ -12,6 +12,7 @@ namespace Console_Test
         {
             Console.WriteLine("Message0");
             Console.WriteLine("Message1");
+            Console.WriteLine("Message2");
         }
     }
 }
