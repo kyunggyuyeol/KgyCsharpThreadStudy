@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Console_Test
 {
@@ -10,9 +11,18 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Message0");
-            Console.WriteLine("Message1");
-            Console.WriteLine("Message2");
+            Thread th = new Thread(printNumber);
+            th.Start();
+            printNumber();
+        }
+
+        static void printNumber()
+        {
+            Console.WriteLine("Starting....");
+            for (int i = 1; i < 10; i++)
+            {
+                Console.WriteLine(i);
+            }
         }
     }
 }
