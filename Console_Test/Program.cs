@@ -11,7 +11,7 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            Thread th = new Thread(printNumber);
+            Thread th = new Thread(PrintNumbersWithDelay);
             th.Start();
             printNumber();
         }
@@ -21,6 +21,16 @@ namespace Console_Test
             Console.WriteLine("Starting....");
             for (int i = 1; i < 10; i++)
             {
+                Console.WriteLine(i);
+            }
+        }
+
+        static void PrintNumbersWithDelay()
+        {
+            Console.WriteLine("Starting...");
+            for (int i = 1; i < 10; i++)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(2));
                 Console.WriteLine(i);
             }
         }
