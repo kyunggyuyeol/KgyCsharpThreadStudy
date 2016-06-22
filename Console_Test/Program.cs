@@ -13,7 +13,9 @@ namespace Console_Test
         {
             Thread th = new Thread(PrintNumbersWithDelay);
             th.Start();
-            printNumber();
+            //th.Join();
+            Console.WriteLine("Thread Completed");
+            //printNumber();
         }
 
         static void printNumber()
@@ -30,7 +32,8 @@ namespace Console_Test
             Console.WriteLine("Starting...");
             for (int i = 1; i < 10; i++)
             {
-                Thread.Sleep(TimeSpan.FromSeconds(2));
+                //Thread.Sleep(TimeSpan.FromSeconds(2));
+                Thread.Sleep(2000);
                 Console.WriteLine(i);
             }
         }
