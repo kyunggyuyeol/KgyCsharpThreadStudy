@@ -34,5 +34,10 @@ namespace Console_Test
                 Console.WriteLine(i);
             }
         }
+
+        public void start()
+        {
+
+        }
     }
 }
