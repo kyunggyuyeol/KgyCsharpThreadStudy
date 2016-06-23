@@ -11,28 +11,33 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            Thread th = new Thread(PrintNumbersWithDelay);
-            th.Start();
-            Thread.Sleep(TimeSpan.FromSeconds(6));
-            th.Abort();
-            Console.WriteLine("A thread has been aborted");
-            Thread t = new Thread(printNumber);
+            Console.WriteLine("Starting program...");
+            Thread t = new Thread(PrintNumbersWithStatus);
+            Thread t2 = new Thread(DoNothing);
+            Console.WriteLine(t.ThreadState.ToString());
+            t2.Start();
             t.Start();
-            printNumber();
-        }
-
-        static void printNumber()
-        {
-            Console.WriteLine("Starting....");
-            for (int i = 1; i < 10; i++)
+            for (int i = 1; i < 30; i++)
             {
-                Console.WriteLine(i);
+                Console.WriteLine(t.ThreadState.ToString());
             }
+            Thread.Sleep(TimeSpan.FromSeconds(6));
+            t.Abort();
+            Console.WriteLine("A thread Has Been aborted");
+            Console.WriteLine(t.ThreadState.ToString());
+            Console.WriteLine(t2.ThreadState.ToString());
         }
 
-        static void PrintNumbersWithDelay()
+        static void DoNothing()
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(2));
+        }
+
+        static void PrintNumbersWithStatus()
         {
             Console.WriteLine("Starting...");
+            Console.WriteLine(Thread.CurrentThread.ThreadState.ToString());
+
             for (int i = 1; i < 10; i++)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(2));
