@@ -13,6 +13,11 @@ namespace Console_Test
         {
             Thread th = new Thread(PrintNumbersWithDelay);
             th.Start();
+            Thread.Sleep(TimeSpan.FromSeconds(6));
+            th.Abort();
+            Console.WriteLine("A thread has been aborted");
+            Thread t = new Thread(printNumber);
+            t.Start();
             printNumber();
         }
 
