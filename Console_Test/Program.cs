@@ -12,7 +12,7 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            ThreadSample Foreground = new ThreadSample(10);
+            ThreadSample Foreground = new ThreadSample(10);//객체 생성시 값 받아 쓰려면 이렇게 사용해야한다.
             ThreadSample background = new ThreadSample(20);
 
             Thread ThreadOne = new Thread(Foreground.CountNumbers);
@@ -28,9 +28,9 @@ namespace Console_Test
 
     class ThreadSample
     {
-        private int _iterations;
+        private readonly int _iterations;//읽기전용
 
-        public ThreadSample(int _iterations)
+        public ThreadSample(int _iterations)// 클래스와 같은 이름으로 만듬
         {
             this._iterations = _iterations;
         }
