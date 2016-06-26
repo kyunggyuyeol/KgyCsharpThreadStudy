@@ -12,59 +12,36 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("current thread priority: {0}", Thread.CurrentThread.Priority);
-            Console.WriteLine("Running on all Cores available");
+            ThreadSample Foreground = new ThreadSample(10);
+            ThreadSample background = new ThreadSample(20);
 
-            RunThreads();
+            Thread ThreadOne = new Thread(Foreground.CountNumbers);
+            ThreadOne.Name = "Foreground";
+            Thread ThreadTwo = new Thread(background.CountNumbers);
+            ThreadTwo.Name = "Background";
+            ThreadTwo.IsBackground = true;
 
-            Thread.Sleep(TimeSpan.FromSeconds(2));
-            Console.WriteLine("Running on a Single core");
-            Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(1); //단일코어 실행
-
-            RunThreads();
+            ThreadOne.Start();
+            ThreadTwo.Start();
         }
-
-        public class ThreadSample
-        {
-            private bool _isStopped = false;
-
-            public void Stop()
-            {
-                _isStopped = true;
-            }
-
-            public void CountNumbers()
-            {
-                long counter = 0;
-                while (!_isStopped)
-                {
-                    counter++;
-                }
-
-                Console.WriteLine("{0} with {1,11} priority" + "has a count = {2,13}", Thread.CurrentThread.Name, Thread.CurrentThread.Priority, counter.ToString("N0"));
-            }
-        }
-
-        static void RunThreads()
-        {
-            ThreadSample sample = new ThreadSample();
-
-            Thread threadOne = new Thread(sample.CountNumbers);
-            threadOne.Name = "ThreadOne";
-
-            Thread threadTwo = new Thread(sample.CountNumbers);
-            threadTwo.Name = "ThreadTwo";
-
-            threadOne.Priority = ThreadPriority.Highest;
-            threadTwo.Priority = ThreadPriority.Lowest;
-
-            threadOne.Start();
-            threadTwo.Start();
-
-            Thread.Sleep(TimeSpan.FromSeconds(2));
-            sample.Stop();
-        }
-
     }
-        
+
+    class ThreadSample
+    {
+        private int _iterations;
+
+        public ThreadSample(int _iterations)
+        {
+            this._iterations = _iterations;
+        }
+
+        public void CountNumbers()
+        {
+            for (int i = 0; i < _iterations; i++)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                Console.WriteLine("{0} prints {1}", Thread.CurrentThread.Name, i);
+            }
+        }
+    }
 }
