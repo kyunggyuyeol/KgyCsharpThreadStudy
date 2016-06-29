@@ -12,46 +12,40 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            object lock1 = new object();
-            object lock2 = new object();
+            Thread t = new Thread(FaultyThread);
+            t.Start();
+            t.Join();
 
-            new Thread(() => LockTooMuch(lock1, lock2)).Start();
-
-            lock (lock2)
+            Console.WriteLine("--------------------------------------------------");
+            try
             {
-                Thread.Sleep(1000);
-                Console.WriteLine("Monitor.TryEnter allows not to get stuck, returning false after a specified timeout is elapsed");
-
-                if (Monitor.TryEnter(lock1, TimeSpan.FromSeconds(5)))
-                {
-                    Console.WriteLine("Acquired a protected resource succesfully");
-                }
-                else
-                {
-                    Console.WriteLine("Timeout acquiring a resource!");
-                }
-
-                new Thread(() => LockTooMuch(lock1, lock2)).Start();
-                Console.WriteLine("--------------------------------------------------");
-
-                lock(lock2)
-                {
-                    Console.WriteLine("this will be a deadLock!");
-                    Thread.Sleep(1000);
-                    lock(lock1)
-                    {
-                        Console.WriteLine("Acquired a protected resoure succesfully");
-                    }
-                }
+                t = new Thread(badFaultyThread);
+                t.Start();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("We wont't get here!");
             }
         }
 
-        static void LockTooMuch(object lock1, object lock2)
+        static void badFaultyThread()
         {
-            lock(lock1)
+            Console.WriteLine("Starting a faulty thread...");
+            Thread.Sleep(2000);
+            throw new Exception("Boom!");
+        }
+
+        static void FaultyThread()
+        {
+            try
             {
+                Console.WriteLine("Starting a fault thread");
                 Thread.Sleep(1000);
-                lock (lock2) ;
+                throw new Exception("Boom!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception Handled: {0}", ex.Message);
             }
         }
     }
