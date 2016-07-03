@@ -18,7 +18,7 @@ namespace Console_Test
                 int secondsToWait = 2 + 2 * i;
 
                 Thread t = new Thread(() => AccessDatabase(threadName, secondsToWait));
-                t.Start();
+                t.Start(); 
             }
         }
 
