@@ -12,21 +12,26 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            const string MutexName = "CsharpThreadingCookBook";
-
-            using (Mutex m = new Mutex(false, MutexName))
+            for (int i = 1; i < 7; i++)
             {
-                if(m.WaitOne(TimeSpan.FromSeconds(5),false))
-                {
-                    Console.WriteLine("Second instance is running!");
-                }
-                else
-                {
-                    Console.WriteLine("Running");
-                    Console.ReadLine();
-                    m.ReleaseMutex();
-                }
+                string threadName = "thread : " + i.ToString();
+                int secondsToWait = 2 + 2 * i;
+
+                Thread t = new Thread(() => AccessDatabase(threadName, secondsToWait));
+                t.Start();
             }
+        }
+
+        static SemaphoreSlim _semaphore = new SemaphoreSlim(4); // 동시스레드 갯수 지정
+
+        static void AccessDatabase(string Name, int seconds)
+        {
+            Console.WriteLine("{0} waits to access a database", Name);
+            _semaphore.Wait();
+            Console.WriteLine("{0} was granted an access to a databses", Name);
+            Thread.Sleep(TimeSpan.FromSeconds(seconds));
+            Console.WriteLine("{0} is completed", Name);
+            _semaphore.Release();
         }
     }
 }
