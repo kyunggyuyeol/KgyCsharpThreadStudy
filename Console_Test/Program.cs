@@ -40,7 +40,7 @@ namespace Console_Test
             _mainEvent.WaitOne();
             Console.WriteLine("Starting second operation...");
             Thread.Sleep(TimeSpan.FromSeconds(seconds));
-            Console.WriteLine("Work is done!");
+            Console.WriteLine("Work is done!"); 
         }
     }
 }
