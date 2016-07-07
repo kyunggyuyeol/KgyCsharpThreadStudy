@@ -10,26 +10,27 @@ namespace Console_Test
 {
     class Program
     {
-        static void Main(string[] args) //CountdownEvent 사용
+        static void Main(string[] args) //Barrier 생성자 사용
         {
-            Console.WriteLine("Starting two operations");
-            Thread t1 = new Thread(() => PerformOperation("operation 1 is Completed", 4));
-            Thread t2 = new Thread(() => PerformOperation("operation 2 is Completed", 8));
-
+            Thread t1 = new Thread(() => PlayMusic("the guitarist", "play an amazing solo", 5));
+            Thread t2 = new Thread(() => PlayMusic("thre singer", "sing his song", 2));
             t1.Start();
             t2.Start();
-            _countdown.Wait();
-            Console.WriteLine("Both operaions have been completed.");
-            _countdown.Dispose();
         }
 
-        static CountdownEvent _countdown = new CountdownEvent(2);
+        static Barrier _barrier = new Barrier(2, b => Console.WriteLine("End of phase {0}", b.CurrentPhaseNumber + 1));
 
-        static void PerformOperation(string message, int seconds)
+        static void PlayMusic(string name, string message, int seconds)
         {
-            Thread.Sleep(TimeSpan.FromSeconds(seconds));
-            Console.WriteLine(message);
-            _countdown.Signal();
+            for (int i = 1; i < 3; i++)
+            {
+                Console.WriteLine("--------------------------------------------------");
+                Thread.Sleep(TimeSpan.FromSeconds(seconds));
+                Console.WriteLine("{0} starts to {1}", name, message);
+                Thread.Sleep(TimeSpan.FromSeconds(seconds));
+                Console.WriteLine("{0} finishes to {1}", name, message);
+                _barrier.SignalAndWait();
+            }
         }
     }
 }
