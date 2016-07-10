@@ -12,24 +12,66 @@ namespace Console_Test
     {
         static void Main(string[] args) //Barrier 생성자 사용
         {
-            Thread t1 = new Thread(() => PlayMusic("the guitarist", "play an amazing solo", 5));
-            Thread t2 = new Thread(() => PlayMusic("thre singer", "sing his song", 2));
-            t1.Start();
-            t2.Start();
+            new Thread(read) { IsBackground = true }.Start();
+            new Thread(read) { IsBackground = true }.Start();
+            new Thread(read) { IsBackground = true }.Start();
+
+            new Thread(() => Write("thread1")) { IsBackground = true }.Start();
+            new Thread(() => Write("thread2")) { IsBackground = true }.Start();
+            Thread.Sleep(TimeSpan.FromSeconds(30));
+
         }
 
-        static Barrier _barrier = new Barrier(2, b => Console.WriteLine("End of phase {0}", b.CurrentPhaseNumber + 1));
+        static ReaderWriterLockSlim _rw = new ReaderWriterLockSlim();
+        static Dictionary<int, int> _items = new Dictionary<int, int>();
 
-        static void PlayMusic(string name, string message, int seconds)
+        static void read()
         {
-            for (int i = 1; i < 3; i++)
+            Console.WriteLine("Reading contents of a Dictionary");
+            while (true)
             {
-                Console.WriteLine("--------------------------------------------------");
-                Thread.Sleep(TimeSpan.FromSeconds(seconds));
-                Console.WriteLine("{0} starts to {1}", name, message);
-                Thread.Sleep(TimeSpan.FromSeconds(seconds));
-                Console.WriteLine("{0} finishes to {1}", name, message);
-                _barrier.SignalAndWait();
+                try
+                {
+                    _rw.EnterReadLock();
+                    foreach (var key_in in _items.Keys)
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(0.1));
+                    }
+                }
+                finally
+                {
+                    _rw.ExitReadLock();
+                }
+            }
+        }
+
+        static void Write(string ThreadName)
+        {
+            while (true)
+            {
+                try
+                {
+                    int newKey = new Random().Next(250);
+                    _rw.EnterUpgradeableReadLock();
+                    if (!_items.ContainsKey(newKey))
+                    {
+                        try
+                        {
+                            _rw.EnterWriteLock();
+                            _items[newKey] = 1;
+                            Console.WriteLine("New key {0} is added to a dictionary by a  {1}", newKey, ThreadName);
+                        }
+                        finally
+                        {
+                            _rw.ExitWriteLock();
+                        }
+                    }
+                    Thread.Sleep(TimeSpan.FromSeconds(0.1));
+                }
+                finally
+                {
+                    _rw.ExitUpgradeableReadLock();
+                }
             }
         }
     }
