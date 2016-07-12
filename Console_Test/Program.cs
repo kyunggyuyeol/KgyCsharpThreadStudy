@@ -12,44 +12,18 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            Thread t1 = new Thread(UserModeWait);
-            Thread t2 = new Thread(HybridSpinWait);
-
-            Console.WriteLine("Running user mode waiting");
+            string aa1 = "";
+            Thread t1 = new Thread(() => value(out aa1));
             t1.Start();
-            Thread.Sleep(20);
-            _isCompleted = true;
-            Thread.Sleep(TimeSpan.FromSeconds(1));
-            _isCompleted = false;
-            Console.WriteLine("Running hybrid SpinWait construct waiting");
-            t2.Start();
-            Thread.Sleep(5);
-            _isCompleted = true;
+            t1.Join();
+
+            Console.WriteLine(aa1);
         }
 
-        static volatile bool _isCompleted = false;
-        
-        static void UserModeWait()
+        static void value(out string value1)
         {
-            while(!_isCompleted)
-            {
-                Console.Write(".");
-            }
-            Console.WriteLine();
-            Console.WriteLine("Waiting is complete");
+            value1 = "asdf";
         }
 
-        static void HybridSpinWait()
-        {
-            SpinWait w = new SpinWait();
-            while(!_isCompleted)
-            {
-                w.SpinOnce();
-                Console.WriteLine(w.NextSpinWillYield);
-            }
-            Console.WriteLine("Waition is complete");
-        }
-
-        
     }
 }
