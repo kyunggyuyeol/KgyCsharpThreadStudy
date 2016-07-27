@@ -12,37 +12,58 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
-            const int x = 1;
-            const int y = 2;
-            const string lambadaState = "lambada state 2";
+            const int numberOfOperations = 500;
 
-            ThreadPool.QueueUserWorkItem(AsyncOperation);
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+            var sw = new Stopwatch();
+            sw.Start();
+            UseThreads(numberOfOperations);
+            sw.Stop();
+            Console.WriteLine("execution time using Thread:{0}", sw.ElapsedMilliseconds);
+            sw.Reset();
 
-            ThreadPool.QueueUserWorkItem(AsyncOperation, "async state");
-            Thread.Sleep(TimeSpan.FromSeconds(1));
-
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                Console.WriteLine("Operation state: {0}", state);
-                Console.WriteLine("Worker thread id:{0}", Thread.CurrentThread.ManagedThreadId);
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-            }, "lambda state");
-
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                Console.WriteLine("operation state: {0}, {1}", x + y, lambadaState); Console.WriteLine("Worker thread id: {0}", Thread.CurrentThread.ManagedThreadId);
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-            }, "lambda state");
-            Thread.Sleep(TimeSpan.FromSeconds(2));
+            sw.Start();
+            UseThreadPool(numberOfOperations);
+            sw.Stop();
+            Console.WriteLine("execution time using Thread:{0}", sw.ElapsedMilliseconds);
         }
 
-        private static void AsyncOperation(object state)
+        static void UseThreads(int numberOfOperations)
         {
-            Console.WriteLine("Operation state: {0}", state ?? "(null)");
-            Console.WriteLine("Worker thread id:{0}", Thread.CurrentThread.ManagedThreadId);
-            Thread.Sleep(TimeSpan.FromSeconds(2));
+            using (var countdown = new CountdownEvent(numberOfOperations))
+            {
+                Console.WriteLine("scheduling work by creating threads");
+                for (int i = 0; i < numberOfOperations; i++)
+                {
+                    var thread = new Thread(() =>
+                    {
+                        Console.WriteLine("{0}", Thread.CurrentThread.ManagedThreadId);
+                        Thread.Sleep(TimeSpan.FromSeconds(0.1));
+                        countdown.Signal();
+                    });
+                    thread.Start();
+                }
+                countdown.Wait();
+                Console.WriteLine();
+            }
         }
 
+        static void UseThreadPool(int numberOfOperations)
+        {
+            using (var countdown = new CountdownEvent(numberOfOperations))
+            {
+                Console.WriteLine("Staring work on a threadpool");
+                for (int i = 0; i < numberOfOperations; i++)
+                {
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        Console.WriteLine("{0}", Thread.CurrentThread.ManagedThreadId);
+                        Thread.Sleep(TimeSpan.FromSeconds(0.1));
+                        countdown.Signal();
+                    });
+                }
+                countdown.Wait();
+                Console.WriteLine();
+            }
+        }
     }
 }
