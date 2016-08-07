@@ -12,80 +12,50 @@ namespace Console_Test
     {
         static void Main(string[] args)
         {
+            RunOperations(TimeSpan.FromSeconds(5));
+            RunOperations(TimeSpan.FromSeconds(7));
+        }
+        static void RunOperations(TimeSpan workerOperaionTimeout)
+        {
+            using (var evt = new ManualResetEvent(false))
             using (var cts = new CancellationTokenSource())
             {
-                CancellationToken token = cts.Token;
-                ThreadPool.QueueUserWorkItem(_ => AsyncOperation1(token));
-                Thread.Sleep(TimeSpan.FromSeconds(2));
+                Console.WriteLine("Registering timeout operations...");
+                var worker = ThreadPool.RegisterWaitForSingleObject(evt, (state, isTimedOut) => workerOperationWait(cts, isTimedOut), null, workerOperaionTimeout, true);
+                Console.WriteLine("Starting long running operation....");
+
+                ThreadPool.QueueUserWorkItem(_ => workerOperation(cts.Token, evt));
+
+                Thread.Sleep(workerOperaionTimeout.Add(TimeSpan.FromSeconds(2)));
+                worker.Unregister(evt);
             }
-
-            using (var cts = new CancellationTokenSource())
-            {
-                CancellationToken token = cts.Token;
-                ThreadPool.QueueUserWorkItem(_ => AsyncOperation2(token));
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-            }
-
-            using (var cts = new CancellationTokenSource())
-            {
-                CancellationToken token = cts.Token;
-                ThreadPool.QueueUserWorkItem(_ => AsyncOperation3(token));
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-            }
-
-            Thread.Sleep(TimeSpan.FromSeconds(2));
-
+            
         }
 
-        static void AsyncOperation1(CancellationToken token)
+        static void workerOperation(CancellationToken token, ManualResetEvent evt)
         {
-            Console.WriteLine("Start thr first task");
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 6; i++)
             {
-                if(token.IsCancellationRequested)
+                if (token.IsCancellationRequested)
                 {
-                    Console.WriteLine("The first task gas been canceled.");
                     return;
                 }
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
-            Console.WriteLine("The first task has completed succesfully");
+            evt.Set();
         }
 
-        static void AsyncOperation2(CancellationToken token)
+        static void workerOperationWait(CancellationTokenSource cts, bool isTimedOut)
         {
-            try
+            if(isTimedOut)
             {
-                Console.WriteLine("Starting the second task");
-                for (int i = 0; i < 5; i++)
-                {
-                    token.ThrowIfCancellationRequested();
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
-                }
-                Console.WriteLine("The second task has completed successfully");
+                cts.Cancel();
+                Console.WriteLine("Worker operation timed out and was canceled.");
             }
-            catch
+            else
             {
-                Console.WriteLine("The second task has been calceled.");
+                Console.WriteLine("Worker operation succeded.");
             }
-        }
-
-        private static void AsyncOperation3(CancellationToken token)
-        {
-            bool cancellationFlag = false;
-
-            token.Register(() => cancellationFlag = true);
-            Console.WriteLine("Starting thre third task");
-            for (int i = 0; i < 5; i++)
-            {
-                if(cancellationFlag)
-                {
-                    Console.WriteLine("The third task has been canceled.");
-                    return;
-                }
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-            }
-            Console.WriteLine("The third task has completed succesfully");
         }
 
     }
