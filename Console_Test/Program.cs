@@ -11,24 +11,22 @@ namespace Console_Test
     class Program
     {
         static void Main(string[] args)
-        {
-            Console.WriteLine("Press 'Enter' to stop thre timer...");
-            DateTime start = DateTime.Now;
-            _timer = new Timer(_ => TimerOperation(start), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2));
+        {//태스크 사용 Study
+            Task t1 = new Task(() => TaskMethod("TASK 1"));
+            Task t2 = new Task(() => TaskMethod("TASK 2"));
+            t2.Start();
+            t1.Start();
 
-            Thread.Sleep(TimeSpan.FromSeconds(6));
-
-            _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(4));
-            Console.ReadLine();
-            _timer.Dispose();
-
+            Task.Run(() => TaskMethod("TASK 3"));
+            Task.Factory.StartNew(() => TaskMethod("TASK 4"));
+            Task.Factory.StartNew(() => TaskMethod("TASK 5"), TaskCreationOptions.LongRunning);
+            Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
-        static Timer _timer;
-        static void TimerOperation(DateTime start)
+        static void TaskMethod(string Name)
         {
-            TimeSpan elapsed = DateTime.Now - start;
-            Console.WriteLine("{0} seconds from {1}. Timer thread pool thread id: {2}", elapsed.Seconds, start, Thread.CurrentThread.ManagedThreadId);
+            Console.WriteLine("Task {0} is running on a thread id {1}. Is thread pool thread :{2}", Name, Thread.CurrentThread.ManagedThreadId, Thread.CurrentThread.IsThreadPoolThread);
+
         }
     }
 }
